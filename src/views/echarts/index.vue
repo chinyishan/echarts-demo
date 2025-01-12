@@ -1,22 +1,32 @@
 <template>
   <div class="app-container">
-    <h1>台灣地圖</h1>
-    <div class="map-row">
-      <el-select
-        v-model="params.county"
-        placeholder="Select"
-        size="large"
-        style="width: 240px"
-      >
-        <el-option
-          v-for="(item, index) in county_town"
-          clas="sss ssss sssss"
-          :key="index"
-          :label="item.label"
-          :value="item.label"
-          >{{ item.label }}</el-option
+    <div class="map-wrap">
+      <div class="map-data">
+        <h1>全國人口參加健保人數</h1>
+        <ul>
+          <li
+            v-for="(item, index) in countyTown"
+            :key="index"
+            @click="handleActive(item.label)"
+          >
+            {{ item.label }}
+          </li>
+        </ul>
+        <!-- <el-select
+          v-model="params.county"
+          placeholder="Select"
+          size="large"
+          style="width: 240px"
         >
-      </el-select>
+          <el-option
+            v-for="(item, index) in countyTown"
+            :key="index"
+            :label="item.label"
+            :value="item.key"
+            >{{ item.label }}</el-option
+          >
+        </el-select> -->
+      </div>
       <div class="map-taiwan" ref="taiwanMap"></div>
     </div>
   </div>
@@ -26,7 +36,8 @@
 import { ref, reactive, onMounted } from "vue";
 import * as echarts from "echarts";
 import taiwanJSON from "@/assets/json/taiwan.json";
-import { county_town } from "@/assets/json/county-town.json";
+import { countyTown } from "@/assets/json/county-town.json";
+import { health } from "@/assets/json/health"; // 性別（男1女2）
 
 const taiwanMap = ref();
 let myChart = null;
@@ -41,159 +52,97 @@ const params = reactive({
 const regions = reactive([
   {
     name: "台北市",
-    itemStyle: {
-      areaColor: "#FF6B6B",
-      opacity: 1,
-    },
+    color: "#FF6B6B",
   },
   {
     name: "基隆市",
-    itemStyle: {
-      areaColor: "#4ECDC4",
-      opacity: 1,
-    },
+    color: "#4ECDC4",
   },
   {
     name: "新北市",
-    itemStyle: {
-      areaColor: "#45B7D1",
-      opacity: 1,
-    },
+    color: "#45B7D1",
   },
   {
     name: "桃園縣",
-    itemStyle: {
-      areaColor: "#FFA07A",
-      opacity: 1,
-    },
+    color: "#FFA07A",
   },
   {
     name: "宜蘭縣",
-    itemStyle: {
-      areaColor: "#98D8C8",
-      opacity: 1,
-    },
+    color: "#98D8C8",
   },
   {
     name: "新竹縣",
-    itemStyle: {
-      areaColor: "#F7DC6F",
-      opacity: 1,
-    },
+    color: "#F7DC6F",
   },
   {
     name: "新竹市",
-    itemStyle: {
-      areaColor: "#BB8FCE",
-      opacity: 1,
-    },
+    color: "#BB8FCE",
   },
   {
     name: "苗栗縣",
-    itemStyle: {
-      areaColor: "#82E0AA",
-      opacity: 1,
-    },
+    color: "#82E0AA",
   },
   {
     name: "彰化縣",
-    itemStyle: {
-      areaColor: "#F1948A",
-      opacity: 1,
-    },
+    color: "#F1948A",
   },
   {
     name: "台中市",
-    itemStyle: {
-      areaColor: "#85C1E9",
-      opacity: 1,
-    },
+    color: "#85C1E9",
   },
   {
     name: "南投縣",
-    itemStyle: {
-      areaColor: "#F8C471",
-      opacity: 1,
-    },
+    color: "#F8C471",
   },
   {
     name: "雲林縣",
-    itemStyle: {
-      areaColor: "#73C6B6",
-      opacity: 1,
-    },
+    color: "#73C6B6",
   },
   {
     name: "嘉義縣",
-    itemStyle: {
-      areaColor: "#E59866",
-      opacity: 1,
-    },
+    color: "#E59866",
   },
   {
     name: "嘉義市",
-    itemStyle: {
-      areaColor: "#FAD7A0",
-      opacity: 1,
-    },
+    color: "#FAD7A0",
   },
   {
     name: "屏東縣",
-    itemStyle: {
-      areaColor: "#D7BDE2",
-      opacity: 1,
-    },
+    color: "#D7BDE2",
   },
   {
     name: "台南市",
-    itemStyle: {
-      areaColor: "#A3E4D7",
-      opacity: 1,
-    },
+    color: "#A3E4D7",
   },
   {
     name: "高雄市",
-    itemStyle: {
-      areaColor: "#F5B7B1",
-      opacity: 1,
-    },
+    color: "#F5B7B1",
   },
   {
     name: "台東縣",
-    itemStyle: {
-      areaColor: "#AED6F1",
-      opacity: 1,
-    },
+    color: "#AED6F1",
   },
   {
     name: "花蓮縣",
-    itemStyle: {
-      areaColor: "#F9E79F",
-      opacity: 1,
-    },
+    color: "#F9E79F",
   },
   {
     name: "澎湖縣",
-    itemStyle: {
-      areaColor: "#A2D9CE",
-      opacity: 1,
-    },
+    color: "#A2D9CE",
   },
   {
     name: "金門縣",
-    itemStyle: {
-      areaColor: "#D2B4DE",
-      opacity: 1,
-    },
+    color: "#D2B4DE",
   },
   {
     name: "連江縣",
-    itemStyle: {
-      areaColor: "#FADBD8",
-      opacity: 1,
-    },
+    color: "#FADBD8",
   },
 ]);
+
+const handleActive = (label) => {
+  console.log(label, "label");
+};
 
 // 散點座標
 const scatter = reactive([
@@ -229,7 +178,7 @@ const drawTaiwan = async () => {
           min: 1, //最小
           max: 3, //最大
         },
-        center: [121, 24], //設置中心點
+        center: [120, 24], //設置中心點
         emphasis: {
           disabled: true, // 禁用高亮效果
         },
@@ -267,6 +216,10 @@ const drawTaiwan = async () => {
   myChart.setOption(option);
 };
 
+/** 設置縣市訊息
+ * 1. 切換縣市的資料
+ * 2. setOption 重新設置地圖資訊
+ */
 const selectRegion = (name) => {
   const selectedRegion = regions.find((region) => region.name === name);
   if (selectedRegion) {
@@ -277,8 +230,7 @@ const selectRegion = (name) => {
             name: region.name,
             value: 0,
             itemStyle: {
-              areaColor:
-                region.name === name ? region.itemStyle.areaColor : "#ffffff",
+              areaColor: region.name === name ? region.color : "#ffffff",
               borderColor: "#aaaa",
               borderWidth: 1,
             },
@@ -291,21 +243,25 @@ const selectRegion = (name) => {
 </script>
 
 <style>
-.map-row {
+.map-wrap {
   width: 100%;
-  height: 100%;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+}
+
+.map-data {
+  width: 50%;
+  padding: 20px;
 }
 
 .map-taiwan {
-  width: 1200px;
-  max-width: 93%;
-  height: 700px;
-  background: #ffff;
-  margin: 0 auto;
+  width: 50%;
+  height: 100%;
   background: #e4faff;
 }
 
-.map-list {
+ul {
   background: #ffff;
   display: flex;
   justify-content: flex-start;
@@ -314,17 +270,16 @@ const selectRegion = (name) => {
   margin-bottom: 20px;
 }
 
-.map-list li {
-  /* flex-grow: 1; */
-  font-size: 12px;
+ul li {
+  font-size: 16px;
   list-style: none;
-  padding: 8px;
+  padding: 4px;
   cursor: pointer;
   display: flex;
   align-items: left;
 }
 
-.map-list li span {
+ul li span {
   display: block;
   width: 20px;
   height: 10px;
