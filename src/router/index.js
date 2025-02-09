@@ -1,15 +1,21 @@
-import { createRouter, createWebHistory } from 'vue-router'; //createWebHashHistory
+import { createRouter, createWebHistory } from "vue-router"; //createWebHashHistory
 
 export const routes = [
   {
-    path: '/',
-    redirect: '/echarts',
+    path: "/",
+    redirect: "/echarts",
   },
   {
-    path: '/echarts',
-    name: 'echarts',
-    component: () => import('@/views/echarts/index.vue'),
-    meta: { title: 'echarts圖表' },
+    path: "/echarts",
+    name: "echarts",
+    component: () => import("@/views/echarts/index.vue"),
+    meta: { title: "echarts圖表" },
+  },
+  {
+    path: "/test",
+    name: "test",
+    component: () => import("@/views/test/index.vue"),
+    meta: { title: "test" },
   },
 ];
 

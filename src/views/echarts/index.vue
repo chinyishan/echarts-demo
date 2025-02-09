@@ -34,7 +34,9 @@
           </div>
         </div>
         <div class="age-wrap">
-          <div class="age-Colum" ref="ageColumRef"></div>
+          <div class="age-group">
+            <div class="age-Colum" ref="ageColumRef"></div>
+          </div>
         </div>
       </div>
       <div class="map-taiwan" ref="mapTaiwanRef"></div>
@@ -48,7 +50,7 @@ import * as echarts from "echarts";
 import taiwanJSON from "@/assets/json/taiwan.json";
 import { countyTown } from "@/assets/json/county-town.json";
 import { health } from "@/assets/json/health"; // 性別（男1女2）
-import { age } from "@/assets/json/age"; // 性別（男1女2）
+import { age } from "@/assets/json/age"; // 年齡
 
 const params = reactive({
   county: "南投縣",
@@ -101,12 +103,12 @@ const regionsAgeData = computed(() => {
 console.log(regionsAgeData.value, "regionsAgeData");
 
 const mapTaiwanRef = ref();
-const mapTaiwanChart = ref(null);
+let mapTaiwanChart = null;
 
 /** 繪製地圖 */
 const drawMap = async () => {
   // Ref 掛載 DOM 物件
-  mapTaiwanChart.value = echarts.init(mapTaiwanRef.value);
+  mapTaiwanChart = echarts.init(mapTaiwanRef.value);
   echarts.registerMap("taiwan", taiwanJSON); // 注册可用的地圖
 
   const option = {
@@ -117,30 +119,32 @@ const drawMap = async () => {
         map: "taiwan",
         geoIndex: 1,
         aspectScale: 1, // 调整地图的宽高比例
-        roam: true, //是否允許縮放，拖曳
+        roam: true, //是否允許縮放拖曳
         zoom: 1, //初始化大小
         scaleLimit: {
           //缩放大小限制
           min: 1, //最小
-          max: 3, //最大
+          max: 4, //最大
         },
         center: [120, 24], //設置中心點
         // 高光設定
         emphasis: {
           disabled: true, // 禁用高亮效果
         },
+        // 選擇
         select: {
-          disabled: true, // 禁用选中效果
+          disabled: true, // 禁用選中效果
         },
+        // 標籤
         label: {
-          show: true,
+          show: true, // 是否顯示
           distance: 100,
           color: "#000", // 文字顏色
-          // borderWidth: 2,
           borderColor: "#000",
           fontSize: 12,
           fontWeight: "400",
         },
+        // 數據陣列
         data: regions.map((region) => ({
           name: region.name,
           value: 0,
@@ -152,30 +156,34 @@ const drawMap = async () => {
         })),
       },
     ],
-    // 工具提示: hover顯示
+    // hover提示
     tooltip: {
       trigger: "item",
       formatter: "{b}",
     },
   };
-  mapTaiwanChart.value.setOption(option);
+  mapTaiwanChart.setOption(option);
 };
 
 const genderPieRef = ref();
-const genderChart = ref(null);
+let genderChart = null;
 
 /** 性別圓餅圖 */
 const drawGenderPie = async () => {
-  genderChart.value = echarts.init(genderPieRef.value);
+  genderChart = echarts.init(genderPieRef.value);
 
   const option = {
+    // 提示框
     tooltip: {
       trigger: "item",
     },
+    // 圖例
     legend: {
       top: "5%",
       left: "center",
+      textStyle: { fontSize: 16, color: "#555" },
     },
+    // 數據系列
     series: [
       {
         name: "人數",
@@ -204,14 +212,14 @@ const drawGenderPie = async () => {
       },
     ],
   };
-  genderChart.value.setOption(option);
+  genderChart.setOption(option);
 };
 
 const ageColumRef = ref();
-const ageColumChart = ref(null);
+let ageColumChart = null;
 
 const drawAgeColum = async () => {
-  ageColumChart.value = echarts.init(ageColumRef.value);
+  ageColumChart = echarts.init(ageColumRef.value);
 
   const peopleData = [];
 
@@ -226,20 +234,23 @@ const drawAgeColum = async () => {
     },
     // 邊距
     grid: {
-      top: "10%",
-      bottom: "10%",
-      left: "8%",
+      top: "4%",
+      bottom: "4%",
+      left: "2%",
       right: "2%",
+      containLabel: true, // 刻度標籤不超出範圍
     },
     xAxis: {
       type: "category",
-      data: age, // X 軸顯示標題，string[]
+      data: age, // X 軸年齡顯示標題，string[]
+      // 指示器配置
       axisPointer: {
         type: "shadow",
       },
     },
     yAxis: {
       type: "value",
+      // 刻度標籤配置
       axisLabel: {
         formatter: (value) => `${value}人`,
       },
@@ -248,22 +259,23 @@ const drawAgeColum = async () => {
       {
         name: "年齡",
         type: "bar",
-        barWidth: "40%",
+        // barWidth: "40%", // 柱狀寬度
         itemStyle: {
-          color: "#BB8FCE", // 設置顏色
+          color: "#BB8FCE",
         },
         data: regionsAgeData.value,
       },
     ],
-    // 顯示提示框组件
+    // 提示框组件
     tooltip: {
       show: true,
+      formatter: "{b}: {c}", // 自訂格式
     },
   };
-  ageColumChart.value.setOption(option);
+  ageColumChart.setOption(option);
 };
 
-// 地區設定
+/** 地區樣式 */
 const regions = reactive([
   {
     name: "台北市",
@@ -359,23 +371,15 @@ const regions = reactive([
 const handleActive = (label) => {
   params.county = label;
   setMapTaiwan(label);
-  setGenderPie(label);
+  setGenderPie();
 };
-
-// 散點座標
-const scatter = reactive([
-  {
-    name: "大樹醫藥股份有限公司-總部",
-    value: [24.990994405686934, 121.31154760370656],
-  },
-]);
 
 /** 設置縣市訊息
  * 1. 切換縣市的資料
  * 2. setOption 重新設置地圖資訊
  */
 const setMapTaiwan = (name) => {
-  mapTaiwanChart.value.setOption({
+  mapTaiwanChart.setOption({
     series: [
       {
         data: regions.map((region) => ({
@@ -393,8 +397,8 @@ const setMapTaiwan = (name) => {
 };
 
 /** 設置性別圓餅圖 */
-const setGenderPie = (name) => {
-  genderChart.value.setOption({
+const setGenderPie = () => {
+  genderChart.setOption({
     series: [
       {
         data: [
@@ -407,14 +411,14 @@ const setGenderPie = (name) => {
 };
 
 onMounted(() => {
-  window.addEventListener("resize", function () {
-    mapTaiwanChart.value.resize();
-    genderChart.value.resize();
-    ageColumChart.value.resize();
-  });
   drawMap();
   drawGenderPie();
   drawAgeColum();
+  window.addEventListener("resize", function () {
+    mapTaiwanChart.resize();
+    genderChart.resize();
+    ageColumChart.resize();
+  });
 });
 </script>
 
@@ -482,16 +486,25 @@ ul li span {
 
 .data-wrap {
   display: flex;
-  gap: 20px;
-  flex-wrap: wrap;
+  gap: 10px;
   padding: 10px;
   border-radius: 6px;
   border: 1px solid #e9e9e9;
   margin-bottom: 20px;
 }
 
+.data-wrap .data-text {
+  width: 50%;
+  height: auto;
+}
+
+.data-wrap .data-gender {
+  width: 50%;
+  height: auto;
+}
+
 .data-wrap .data-gender .gender-pie {
-  width: 280px;
+  width: 100%;
   height: 280px;
   background: #ffff;
 }
