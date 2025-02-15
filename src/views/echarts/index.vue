@@ -69,8 +69,6 @@ const regionsData = computed(() => {
   return result;
 });
 
-console.log(regionsData.value, "regionsData");
-
 /** 地區性別
  * @param male 男性
  * @param female 男性
@@ -234,10 +232,6 @@ const drawAgeColum = async () => {
   });
 
   const option = {
-    // 顯示
-    tooltip: {
-      trigger: "axis",
-    },
     // 邊距
     grid: {
       top: "4%",
@@ -260,7 +254,7 @@ const drawAgeColum = async () => {
       axisLabel: {
         formatter: (value) => `${value}人`,
       },
-      max: 8000, // 設定最大值
+      max: 10000, // 設定最大值
       min: 0, // 設定最小值
     },
     series: [
@@ -277,6 +271,7 @@ const drawAgeColum = async () => {
     // 提示框组件
     tooltip: {
       show: true,
+      trigger: "axis",
       formatter: "{b}: {c}", // 自訂格式
     },
   };
