@@ -20,7 +20,11 @@
             <h2>{{ params.county }}</h2>
             <h3>
               縣市總人數 :
-              {{ regionsGenderData.male + regionsGenderData.female }}人
+              {{
+                (
+                  regionsGenderData.male + regionsGenderData.female
+                ).toLocaleString()
+              }}人
             </h3>
             <h3>
               男性總人數 : {{ regionsGenderData.male.toLocaleString() }}人
@@ -39,7 +43,9 @@
           </div>
         </div>
       </div>
-      <div class="map-taiwan" ref="mapTaiwanRef"></div>
+      <div class="map-right">
+        <div class="map-taiwan" ref="mapTaiwanRef"></div>
+      </div>
     </div>
   </div>
 </template>
@@ -100,8 +106,6 @@ const regionsAgeData = computed(() => {
   return Object.values(result);
 });
 
-console.log(regionsAgeData.value, "regionsAgeData");
-
 const mapTaiwanRef = ref();
 let mapTaiwanChart = null;
 
@@ -109,7 +113,7 @@ let mapTaiwanChart = null;
 const drawMap = async () => {
   // Ref 掛載 DOM 物件
   mapTaiwanChart = echarts.init(mapTaiwanRef.value);
-  echarts.registerMap("taiwan", taiwanJSON); // 注册可用的地圖
+  echarts.registerMap("taiwan", taiwanJSON); // 注冊可用的地圖
 
   const option = {
     // 數據系列
@@ -118,7 +122,7 @@ const drawMap = async () => {
         type: "map",
         map: "taiwan",
         geoIndex: 1,
-        aspectScale: 1, // 调整地图的宽高比例
+        aspectScale: 1, // 調整地圖的寬高比例
         roam: true, //是否允許縮放拖曳
         zoom: 1, //初始化大小
         scaleLimit: {
@@ -159,7 +163,7 @@ const drawMap = async () => {
     // hover提示
     tooltip: {
       trigger: "item",
-      formatter: "{b}",
+      formatter: "{b}", //字符串模板，{a}（系列名稱），{b}（區域名稱），{c}（合併數值）
     },
   };
   mapTaiwanChart.setOption(option);
@@ -194,10 +198,12 @@ const drawGenderPie = async () => {
         itemStyle: {
           borderRadius: 10, // 扇區圓角
         },
+        // 顯示名
         label: {
           show: false,
           position: "center",
         },
+        // 高光設定
         emphasis: {
           label: {
             show: true,
@@ -218,11 +224,11 @@ const drawGenderPie = async () => {
 const ageColumRef = ref();
 let ageColumChart = null;
 
+/** 年齡分佈柱狀圖 */
 const drawAgeColum = async () => {
   ageColumChart = echarts.init(ageColumRef.value);
 
   const peopleData = [];
-
   regionsData.value.forEach((item) => {
     peopleData.push(item.people);
   });
@@ -254,6 +260,8 @@ const drawAgeColum = async () => {
       axisLabel: {
         formatter: (value) => `${value}人`,
       },
+      max: 8000, // 設定最大值
+      min: 0, // 設定最小值
     },
     series: [
       {
@@ -263,7 +271,7 @@ const drawAgeColum = async () => {
         itemStyle: {
           color: "#BB8FCE",
         },
-        data: regionsAgeData.value,
+        data: peopleData,
       },
     ],
     // 提示框组件
@@ -370,8 +378,26 @@ const regions = reactive([
 /** 點擊地區重置資料 */
 const handleActive = (label) => {
   params.county = label;
-  setMapTaiwan(label);
   setGenderPie();
+  setAgeColum();
+  setMapTaiwan(label);
+};
+
+/** 設置年齡分佈 */
+const setAgeColum = () => {
+  const peopleData = [];
+
+  regionsData.value.forEach((item) => {
+    peopleData.push(item.people);
+  });
+
+  ageColumChart.setOption({
+    series: [
+      {
+        data: peopleData,
+      },
+    ],
+  });
 };
 
 /** 設置縣市訊息
@@ -435,8 +461,13 @@ onMounted(() => {
   padding: 20px;
 }
 
-.map-taiwan {
+.map-right {
   width: 50%;
+  height: 100%;
+}
+
+.map-taiwan {
+  width: 100%;
   height: 100%;
   background: #e4faff;
 }
