@@ -2,7 +2,7 @@
 
 使用 Vue3 + Vite + ECharts 的簡單圖表專案，展示如何整合 ECharts 圖表，並支援 RWD。
 
-專案連結: https://echarts-demo-five.vercel.app/echarts
+專案連結: https://echarts-demo-five.vercel.app/
 
 ## 專案特色
 
